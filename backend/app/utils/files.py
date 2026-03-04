@@ -17,12 +17,21 @@ def ensure_storage_dirs():
 def validate_file(filename: str, size_bytes: int) -> bool:
     ext = filename.rsplit(".", 1)[-1].lower()
     if ext not in ALLOWED_EXTENSIONS:
-        raise ValueError(f"Unsupported file type: .{ext}. Allowed: {ALLOWED_EXTENSIONS}")
+        raise ValueError(
+            f"Unsupported file type: .{ext}. Allowed: {ALLOWED_EXTENSIONS}"
+        )
     if size_bytes > MAX_FILE_SIZE_MB * 1024 * 1024:
-        raise ValueError(f"File too large. Maximum size is {MAX_FILE_SIZE_MB}MB.")
+        raise ValueError(
+            f"File too large. Maximum size is {MAX_FILE_SIZE_MB}MB."
+        )
     return True
 
 def generate_doc_id() -> str:
     return uuid.uuid4().hex
+
+def get_doc_index_path(doc_id: str) -> Path:
+    path = VECTORDB_DIR / doc_id
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 ensure_storage_dirs()

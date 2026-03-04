@@ -19,10 +19,12 @@ def chunk_text(text: str, doc_id: str, metadata: dict) -> List[dict]:
                 "chunk_index": index,
                 "doc_id": doc_id,
                 "metadata": {
-                    **metadata,
                     "text": chunk_text_slice,
-                    "chunk_index": index,
+                    "filename": metadata.get("filename", ""),
+                    "file_type": metadata.get("file_type", ""),
+                    "page_count": metadata.get("page_count", 0),
                     "doc_id": doc_id,
+                    "chunk_index": index,
                     "char_start": start,
                     "char_end": end
                 }
@@ -31,5 +33,5 @@ def chunk_text(text: str, doc_id: str, metadata: dict) -> List[dict]:
 
         start += chunk_size - overlap
 
-    logger.info(f"Chunked doc {doc_id} into {len(chunks)} chunks")
+    logger.info(f"Chunked doc {doc_id} into {len(chunks)} chunks.")
     return chunks
