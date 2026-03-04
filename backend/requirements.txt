@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sentence-transformers
+faiss-cpu
+pymupdf
+python-docx
+ollama
+python-dotenv
+pydantic
+httpx
+pydantic-settings
