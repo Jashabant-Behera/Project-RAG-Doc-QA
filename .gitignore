@@ -1,5 +1,7 @@
 .env
 storage/
+backend/storage/
+backend/datasets/
 __pycache__/
 node_modules/
 dist/

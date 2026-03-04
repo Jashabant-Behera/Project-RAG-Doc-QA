@@ -1,5 +1,8 @@
 from typing import List
 import numpy as np
+import os
+os.environ["USE_TF"] = "0"
+os.environ["USE_TORCH"] = "1"
 from app.config import settings
 from app.logger import logger
 

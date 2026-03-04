@@ -20,6 +20,7 @@ def chunk_text(text: str, doc_id: str, metadata: dict) -> List[dict]:
                 "doc_id": doc_id,
                 "metadata": {
                     **metadata,
+                    "text": chunk_text_slice,
                     "chunk_index": index,
                     "doc_id": doc_id,
                     "char_start": start,
