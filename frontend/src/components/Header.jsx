@@ -12,7 +12,7 @@ const Header = () => {
     return (
         <header className="header">
             <div className="header-brand">
-                <div className="header-logo">📄</div>
+                <div className="header-logo">DOC</div>
                 <span className="header-title">RAG Doc Q&A</span>
             </div>
             <nav className="header-nav">
