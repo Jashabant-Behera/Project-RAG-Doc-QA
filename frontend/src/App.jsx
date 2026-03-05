@@ -24,15 +24,15 @@ const App = () => {
 
     return (
         <BrowserRouter>
-            <div style={styles.app}>
+            <div className="app-shell">
                 <Header />
-                <div style={styles.body}>
+                <div className="body-row">
                     <Sidebar
                         docs={uploadHook.uploadedDocs}
                         selectedDocId={selectedDoc?.doc_id}
                         onSelectDoc={handleSelectDoc}
                     />
-                    <div style={styles.content}>
+                    <div className="main-content">
                         <Routes>
                             <Route
                                 path="/"
@@ -58,12 +58,6 @@ const App = () => {
             </div>
         </BrowserRouter>
     );
-};
-
-const styles = {
-    app: { display: "flex", flexDirection: "column", minHeight: "100vh", fontFamily: "Inter, system-ui, sans-serif" },
-    body: { display: "flex", flex: 1 },
-    content: { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" },
 };
 
 export default App;

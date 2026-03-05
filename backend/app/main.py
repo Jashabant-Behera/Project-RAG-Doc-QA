@@ -33,24 +33,20 @@ app.include_router(qa.router, tags=["Q&A"])
 async def health():
     return {"status": "ok", "service": "rag-doc-qa"}
 
-# Fix 5: Ollama startup check
+# Groq API startup check
 @app.on_event("startup")
 async def startup_checks():
-    import httpx
     logger.info("Backend starting up...")
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get(f"{settings.OLLAMA_URL}/api/tags")
-            if response.status_code == 200:
-                logger.info(f"Ollama is reachable at {settings.OLLAMA_URL}")
-            else:
-                logger.warning(
-                    f"Ollama responded with status {response.status_code}"
-                )
-    except Exception:
+    if not settings.GROQ_API_KEY:
         logger.warning(
-            f"Ollama is NOT reachable at {settings.OLLAMA_URL}. "
-            "Upload will work but /ask will fail until Ollama is running."
+            "GROQ_API_KEY is not set. "
+            "Upload will work but /ask will fail until the key is configured in backend/.env"
+        )
+    else:
+        logger.info(
+            f"Groq API key loaded. "
+            f"Fast model: {settings.GROQ_MODEL_FAST} | "
+            f"Smart model: {settings.GROQ_MODEL_SMART}"
         )
 
 # Global exception handler

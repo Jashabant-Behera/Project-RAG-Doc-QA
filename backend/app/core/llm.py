@@ -1,37 +1,53 @@
-import httpx
+from openai import AsyncOpenAI
 from app.config import settings
 from app.logger import logger
 
-async def call_ollama(prompt: str) -> str:
-    payload = {
-        "model": settings.OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False
-    }
+# Groq is OpenAI-compatible — just swap the base_url and API key
+def _get_groq_client() -> AsyncOpenAI:
+    return AsyncOpenAI(
+        api_key=settings.GROQ_API_KEY,
+        base_url="https://api.groq.com/openai/v1",
+    )
+
+
+async def call_groq(prompt: str, smart: bool = True) -> str:
+    """
+    Call Groq's LLM via the OpenAI-compatible API.
+
+    Args:
+        prompt: The full RAG prompt (context + question).
+        smart:  If True, use the 70b versatile model (better accuracy).
+                If False, use the 8b instant model (faster, cheaper).
+    """
+    model = settings.GROQ_MODEL_SMART if smart else settings.GROQ_MODEL_FAST
+    client = _get_groq_client()
 
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{settings.OLLAMA_URL}/api/generate",
-                json=payload
-            )
-            response.raise_for_status()
-            data = response.json()
-            answer = data.get("response", "").strip()
-            logger.info(f"LLM responded with {len(answer)} characters.")
-            return answer
+        logger.info(f"Calling Groq model '{model}' ...")
+        response = await client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a helpful assistant that answers questions "
+                        "strictly based on the provided document context. "
+                        "Be concise and accurate. Do not make up information."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=0.2,
+            max_tokens=1024,
+        )
 
-    except httpx.ConnectError:
-        logger.error("Cannot connect to Ollama. Is it running?")
-        raise ConnectionError(
-            f"Cannot reach Ollama at {settings.OLLAMA_URL}. "
-            "Ensure Ollama is running: docker run -p 11434:11434 ollama/ollama"
-        )
-    except httpx.TimeoutException:
-        logger.error("Ollama request timed out.")
-        raise TimeoutError("Ollama did not respond within 60 seconds.")
-    except httpx.HTTPStatusError as e:
-        logger.error(f"Ollama returned HTTP error: {e.response.status_code}")
-        raise RuntimeError(
-            f"Ollama HTTP error: {e.response.status_code} — {e.response.text}"
-        )
+        answer = response.choices[0].message.content.strip()
+        logger.info(f"Groq responded with {len(answer)} characters.")
+        return answer
+
+    except Exception as e:
+        logger.error(f"Groq API error: {e}")
+        raise RuntimeError(f"Groq API call failed: {e}")

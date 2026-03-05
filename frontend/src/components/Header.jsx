@@ -1,66 +1,44 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
     const location = useLocation();
+    const [theme, setTheme] = useState("sunny");
+
+    useEffect(() => {
+        document.body.setAttribute("data-theme", theme);
+    }, [theme]);
 
     return (
-        <header style={styles.header}>
-            <div style={styles.brand}>
-                <span style={styles.logo}>📄</span>
-                <span style={styles.title}>RAG Doc Q&A</span>
+        <header className="header">
+            <div className="header-brand">
+                <div className="header-logo">📄</div>
+                <span className="header-title">RAG Doc Q&A</span>
             </div>
-            <nav style={styles.nav}>
+            <nav className="header-nav">
                 <Link
                     to="/"
-                    style={{
-                        ...styles.link,
-                        ...(location.pathname === "/" ? styles.activeLink : {}),
-                    }}
+                    className={`nav-link ${location.pathname === "/" ? "active" : ""}`}
                 >
                     Upload
                 </Link>
                 <Link
                     to="/chat"
-                    style={{
-                        ...styles.link,
-                        ...(location.pathname === "/chat" ? styles.activeLink : {}),
-                    }}
+                    className={`nav-link ${location.pathname === "/chat" ? "active" : ""}`}
                 >
                     Chat
                 </Link>
+
+                <div className="theme-switcher">
+                    <div className={`theme-dot ${theme === "sunny" ? "active" : ""}`} data-t="sunny" onClick={() => setTheme("sunny")} title="Sunny Yellow"></div>
+                    <div className={`theme-dot ${theme === "coral" ? "active" : ""}`} data-t="coral" onClick={() => setTheme("coral")} title="Coral Reef"></div>
+                    <div className={`theme-dot ${theme === "sage" ? "active" : ""}`} data-t="sage" onClick={() => setTheme("sage")} title="Sage Garden"></div>
+                    <div className={`theme-dot ${theme === "lavender" ? "active" : ""}`} data-t="lavender" onClick={() => setTheme("lavender")} title="Lavender Dream"></div>
+                    <div className={`theme-dot ${theme === "ocean" ? "active" : ""}`} data-t="ocean" onClick={() => setTheme("ocean")} title="Ocean Dusk"></div>
+                </div>
             </nav>
         </header>
     );
-};
-
-const styles = {
-    header: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 24px",
-        height: "60px",
-        backgroundColor: "#1e3a5f",
-        color: "#fff",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-    },
-    brand: { display: "flex", alignItems: "center", gap: "10px" },
-    logo: { fontSize: "22px" },
-    title: { fontSize: "18px", fontWeight: "700", color: "#fff" },
-    nav: { display: "flex", gap: "24px" },
-    link: {
-        color: "#cbd5e1",
-        textDecoration: "none",
-        fontSize: "15px",
-        fontWeight: "500",
-    },
-    activeLink: {
-        color: "#ffffff",
-        borderBottom: "2px solid #60a5fa",
-        paddingBottom: "2px",
-    },
 };
 
 export default Header;

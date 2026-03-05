@@ -1,13 +1,31 @@
+# Environment
 .env
-storage/
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Backend artifacts
 backend/storage/
 backend/datasets/
-__pycache__/
+storage/
+
+# Frontend
 node_modules/
 dist/
-.vscode/
 
-# Ignore outputs & data
-*.json
-*.csv
+# IDE
+.vscode/
+.idea/
+
+# Logs & temp outputs
 *.log
+test_output.log
+
+# Test artifacts (not test scripts)
+backend/test.csv
+backend/upload_resp.json
+backend/test_groq.py

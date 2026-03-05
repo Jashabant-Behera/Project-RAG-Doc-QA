@@ -2,10 +2,11 @@ import ChatView from "../components/ChatView";
 
 const Chat = ({ useChatHook, selectedDoc }) => {
     return (
-        <ChatView
-            useChatHook={useChatHook}
-            selectedDoc={selectedDoc}
-        />
+        <div className="page active">
+            <div className="chat-page">
+                <ChatView useChatHook={useChatHook} selectedDoc={selectedDoc} />
+            </div>
+        </div>
     );
 };
 

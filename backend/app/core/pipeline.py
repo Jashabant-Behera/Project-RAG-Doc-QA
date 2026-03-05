@@ -1,5 +1,5 @@
 from app.core.embedder import encode
-from app.core.llm import call_ollama
+from app.core.llm import call_groq
 from app.models.response import AnswerResponse
 from app.vectorstore.faiss import FAISSStore
 from app.config import settings
@@ -48,7 +48,7 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
     logger.info(f"Prompt built with {len(context_parts)} chunks, {len(context)} chars.")
 
     # Step 5: Call LLM
-    answer = await call_ollama(prompt)
+    answer = await call_groq(prompt, smart=True)
 
     # Step 6: Build sources list
     sources = []

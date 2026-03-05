@@ -25,7 +25,7 @@ async def test_run_query():
     mock_store = make_mock_store()
 
     with patch("app.core.pipeline.encode") as mock_encode, \
-         patch("app.core.pipeline.call_ollama", new_callable=AsyncMock) as mock_llm:
+         patch("app.core.pipeline.call_groq", new_callable=AsyncMock) as mock_llm:
 
         mock_encode.return_value = np.array([[0.1] * 384], dtype=np.float32)
         mock_llm.return_value = "Paris is the capital of France."
