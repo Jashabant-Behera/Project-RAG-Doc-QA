@@ -30,9 +30,10 @@ async def call_groq(prompt: str, smart: bool = True) -> str:
                 {
                     "role": "system",
                     "content": (
-                        "You are a helpful assistant that answers questions "
-                        "strictly based on the provided document context. "
-                        "Be concise and accurate. Do not make up information."
+                        "You are a helpful assistant answering questions about a document. "
+                        "Use the provided context as the main source of information. "
+                        "If the context is partially relevant, use it to give the best possible answer. "
+                        "If the answer cannot be found in the context, say you could not find it."
                     ),
                 },
                 {

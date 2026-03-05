@@ -5,14 +5,22 @@ from app.vectorstore.faiss import FAISSStore
 from app.config import settings
 from app.logger import logger
 
-RAG_PROMPT_TEMPLATE = """You are a helpful assistant. Answer the question using ONLY the context provided below.
-If the answer cannot be found in the context, respond with: "I could not find the answer in the provided document."
-Do not make up information. Be concise and accurate.
+RAG_PROMPT_TEMPLATE = """You are a helpful assistant answering questions about a document.
+
+Use the context below to answer the question.
+
+Guidelines:
+- Prefer information from the provided context.
+- If the context contains related information, use it to form the best possible answer.
+- If the context does not contain enough information to answer the question, say:
+  "I could not find the answer in the provided document."
+- Do NOT invent facts that are unrelated to the context.
 
 Context:
 {context}
 
-Question: {question}
+Question:
+{question}
 
 Answer:"""
 
@@ -36,7 +44,7 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
     for i, result in enumerate(results):
         chunk_text = result.get("text", "")
         if chunk_text:
-            context_parts.append(f"[Chunk {i+1}]\n{chunk_text}")
+            context_parts.append(f"Document Chunk {i+1}:\n{chunk_text}")
 
     context = "\n\n".join(context_parts)
 

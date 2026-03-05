@@ -29,3 +29,8 @@ test_output.log
 backend/test.csv
 backend/upload_resp.json
 backend/test_groq.py
+
+# Docker artifacts
+Dockerfile
+docker-compose.yml
+nginx.conf
