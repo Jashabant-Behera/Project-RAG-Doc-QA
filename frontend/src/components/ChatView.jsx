@@ -31,21 +31,21 @@ const ChatView = ({ useChatHook, selectedDoc }) => {
         <>
             {selectedDoc ? (
                 <div className="doc-banner">
-                    <span>📄 Chatting about: <strong>{selectedDoc.filename}</strong></span>
+                    <span>Chatting about: <strong>{selectedDoc.filename}</strong></span>
                     <button onClick={clearChat} className="btn btn-ghost btn-sm">
                         Clear chat
                     </button>
                 </div>
             ) : (
                 <div className="no-doc-banner">
-                    ⚠️ No document selected. Upload one or pick from the sidebar.
+                    Alert: No document selected. Upload one or pick from the sidebar.
                 </div>
             )}
 
             <div className="messages-area">
                 {messages.length === 0 && (
                     <div className="empty-chat">
-                        <span className="empty-chat-icon">💬</span>
+                        <span className="empty-chat-icon">MSG</span>
                         <h2 className="empty-chat-title">Ask anything</h2>
                         <p className="empty-chat-sub">Your answers will come straight from the document.</p>
                     </div>
@@ -72,7 +72,7 @@ const ChatView = ({ useChatHook, selectedDoc }) => {
                                             {msg.sources.map((src, i) => (
                                                 <div key={i} className="source-card">
                                                     <div className="source-meta">
-                                                        <span className="source-filename">📄 {src.filename}</span>
+                                                        <span className="source-filename">{src.filename}</span>
                                                         <span className="source-score">Score: {src.score}</span>
                                                     </div>
                                                     <p className="source-text">{src.text}</p>

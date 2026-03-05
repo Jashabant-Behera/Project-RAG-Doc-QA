@@ -48,25 +48,25 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                     style={{ display: "none" }}
                     onChange={handleInputChange}
                 />
-                <span className="dropzone-icon">{file ? "📄" : "☁️"}</span>
+                <span className="dropzone-icon">{file ? "DOC" : "FILE"}</span>
                 <p className="dropzone-text">
                     {file ? file.name : "Drag & drop here, or click to browse"}
                 </p>
                 <p className="dropzone-hint">PDF · DOCX · TXT &nbsp;·&nbsp; Max 50MB</p>
             </div>
 
-            {error && <div className="status-msg error">❌ {error}</div>}
+            {error && <div className="status-msg error">Error: {error}</div>}
 
             {status === "success" && (
                 <div className="status-msg success">
-                    ✅ Document uploaded and indexed successfully!
+                    Success: Document uploaded and indexed successfully!
                 </div>
             )}
 
             {file && status !== "uploading" && (
                 <div className="upload-actions">
                     <button className="btn btn-primary" onClick={handleUploadClick}>
-                        <span>⬆</span> Upload Document
+                        Upload Document
                     </button>
                     <button className="btn btn-ghost" onClick={reset}>
                         Clear

@@ -10,7 +10,7 @@ const Sidebar = ({ docs = [], selectedDocId, onSelectDoc }) => {
 
             {docs.length === 0 ? (
                 <div className="sidebar-empty">
-                    <span className="sidebar-empty-icon">🗂️</span>
+                    <span className="sidebar-empty-icon">📂</span>
                     <p className="sidebar-empty-text">
                         No documents yet.<br />
                         Upload one to get started.
@@ -24,7 +24,7 @@ const Sidebar = ({ docs = [], selectedDocId, onSelectDoc }) => {
                             onClick={() => onSelectDoc(doc)}
                             className={`doc-item ${selectedDocId === doc.doc_id ? "selected" : ""}`}
                         >
-                            <span className="doc-icon">📄</span>
+                            <span className="doc-icon">DOC</span>
                             <div className="doc-info">
                                 <div className="doc-name">{doc.filename}</div>
                                 <div className="doc-meta">
