@@ -7,7 +7,6 @@ python-docx
 openai
 python-dotenv
 pydantic
-httpx
 pydantic-settings
 numpy
 pytest
