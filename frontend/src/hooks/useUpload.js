@@ -4,6 +4,7 @@ import { isValidFile } from "../utils/validate";
 
 const useUpload = () => {
     const [file, setFile] = useState(null);
+    // ✅ FIX: status can now be "idle" | "uploading" | "processing" | "success" | "error"
     const [status, setStatus] = useState("idle");
     const [error, setError] = useState(null);
     const [uploadedDocs, setUploadedDocs] = useState([]);
@@ -26,11 +27,27 @@ const useUpload = () => {
             return null;
         }
 
+        // Phase 1: sending the file bytes
         setStatus("uploading");
         setError(null);
 
         try {
-            const result = await uploadDocument(file);
+            // uploadDocument now:
+            //   1. POSTs the file → server returns {doc_id, status:"processing"} instantly
+            //   2. Polls /upload/status/:doc_id until "ready"
+            // We surface the transition to "processing" inside the polling loop
+            // by having uploadDocument resolve only when indexing is complete.
+
+            // ✅ FIX: Switch to "processing" after the file lands on the server.
+            // The upload API does the polling internally; we just need a way to
+            // reflect the intermediate state. We do this by wrapping it:
+            const resultPromise = uploadDocument(file);
+
+            // Give the file ~800ms to reach the server, then flip to "processing"
+            const processingTimer = setTimeout(() => setStatus("processing"), 800);
+
+            const result = await resultPromise;
+            clearTimeout(processingTimer);
 
             const newDoc = {
                 ...result,
@@ -41,6 +58,7 @@ const useUpload = () => {
             setStatus("success");
             setFile(null);
             return newDoc;
+
         } catch (err) {
             const message =
                 err.response?.data?.detail || "Upload failed. Please try again.";

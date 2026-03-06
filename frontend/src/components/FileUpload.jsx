@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CloudUpload, FileText, CheckCircle2, AlertCircle, Upload } from "lucide-react";
+import { CloudUpload, FileText, CheckCircle2, AlertCircle, Upload, Loader } from "lucide-react";
 
 const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
     const {
@@ -33,6 +33,12 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
         }
     };
 
+    // ✅ FIX: Differentiate between "uploading" (sending file) and
+    // "processing" (server indexing in background).
+    const isUploading = status === "uploading";
+    const isProcessing = status === "processing";
+    const isBusy = isUploading || isProcessing;
+
     return (
         <>
             <div
@@ -40,7 +46,7 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
-                onClick={() => inputRef.current?.click()}
+                onClick={() => !isBusy && inputRef.current?.click()}
             >
                 <input
                     ref={inputRef}
@@ -50,7 +56,10 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                     onChange={handleInputChange}
                 />
                 <span className="dropzone-icon">
-                    {file ? <FileText className="lucide-icon animate-pulse" size={48} strokeWidth={1.5} /> : <CloudUpload className="lucide-icon animate-bounce" size={48} strokeWidth={1.5} />}
+                    {file
+                        ? <FileText className="lucide-icon animate-pulse" size={48} strokeWidth={1.5} />
+                        : <CloudUpload className="lucide-icon animate-bounce" size={48} strokeWidth={1.5} />
+                    }
                 </span>
                 <p className="dropzone-text">
                     {file ? file.name : "Drag & drop here, or click to browse"}
@@ -58,15 +67,21 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                 <p className="dropzone-hint">PDF · DOCX · TXT &nbsp;·&nbsp; Max 50MB</p>
             </div>
 
-            {error && <div className="status-msg error"><AlertCircle className="lucide-icon" size={16} style={{ marginRight: 4 }} /> {error}</div>}
-
-            {status === "success" && (
-                <div className="status-msg success">
-                    <CheckCircle2 className="lucide-icon" size={16} style={{ marginRight: 4 }} /> Document uploaded and indexed successfully!
+            {error && (
+                <div className="status-msg error">
+                    <AlertCircle className="lucide-icon" size={16} style={{ marginRight: 4 }} />
+                    {error}
                 </div>
             )}
 
-            {file && status !== "uploading" && (
+            {status === "success" && (
+                <div className="status-msg success">
+                    <CheckCircle2 className="lucide-icon" size={16} style={{ marginRight: 4 }} />
+                    Document uploaded and indexed successfully!
+                </div>
+            )}
+
+            {file && !isBusy && (
                 <div className="upload-actions">
                     <button className="btn btn-primary" onClick={handleUploadClick}>
                         <Upload size={16} /> Upload Document
@@ -77,11 +92,21 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                 </div>
             )}
 
-            {status === "uploading" && (
+            {/* ✅ FIX: Two distinct loading states with clear user feedback */}
+            {isUploading && (
                 <div className="upload-actions">
                     <div className="btn-loading">
                         <div className="spinner"></div>
-                        Uploading and indexing...
+                        Uploading file…
+                    </div>
+                </div>
+            )}
+
+            {isProcessing && (
+                <div className="upload-actions">
+                    <div className="btn-loading">
+                        <div className="spinner"></div>
+                        Indexing document — this takes a few seconds…
                     </div>
                 </div>
             )}

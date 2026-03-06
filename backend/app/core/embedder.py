@@ -6,18 +6,15 @@ os.environ["USE_TORCH"] = "1"
 from app.config import settings
 from app.logger import logger
 
-_model = None
+# ✅ FIX: Load model eagerly at module import time, not on first request.
+# This moves the ~3-5s model load cost to server startup instead of
+# blocking the first user upload.
+logger.info(f"Loading embedding model at startup: {settings.EMBEDDING_MODEL}")
+from sentence_transformers import SentenceTransformer
+_model = SentenceTransformer(settings.EMBEDDING_MODEL)
+logger.info("Embedding model loaded and ready.")
 
-def _get_model():
-    global _model
-    if _model is None:
-        from sentence_transformers import SentenceTransformer
-        logger.info(f"Loading embedding model: {settings.EMBEDDING_MODEL}")
-        _model = SentenceTransformer(settings.EMBEDDING_MODEL)
-        logger.info("Embedding model loaded.")
-    return _model
 
 def encode(texts: List[str]) -> np.ndarray:
-    model = _get_model()
-    vectors = model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
+    vectors = _model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
     return np.array(vectors, dtype=np.float32)
