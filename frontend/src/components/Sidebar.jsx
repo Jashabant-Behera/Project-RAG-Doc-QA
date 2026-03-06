@@ -1,4 +1,5 @@
 import { formatDate } from "../utils/format";
+import { FolderOpen, FileText } from "lucide-react";
 
 const Sidebar = ({ docs = [], selectedDocId, onSelectDoc }) => {
     return (
@@ -10,7 +11,7 @@ const Sidebar = ({ docs = [], selectedDocId, onSelectDoc }) => {
 
             {docs.length === 0 ? (
                 <div className="sidebar-empty">
-                    <span className="sidebar-empty-icon">📂</span>
+                    <span className="sidebar-empty-icon"><FolderOpen className="lucide-icon animate-float" size={48} strokeWidth={1.5} /></span>
                     <p className="sidebar-empty-text">
                         No documents yet.<br />
                         Upload one to get started.
@@ -24,7 +25,7 @@ const Sidebar = ({ docs = [], selectedDocId, onSelectDoc }) => {
                             onClick={() => onSelectDoc(doc)}
                             className={`doc-item ${selectedDocId === doc.doc_id ? "selected" : ""}`}
                         >
-                            <span className="doc-icon">DOC</span>
+                            <span className="doc-icon"><FileText size={20} className="lucide-icon" strokeWidth={2} /></span>
                             <div className="doc-info">
                                 <div className="doc-name">{doc.filename}</div>
                                 <div className="doc-meta">

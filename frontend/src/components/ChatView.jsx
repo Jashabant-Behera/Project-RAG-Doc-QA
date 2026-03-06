@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { FileText, MessageSquare, AlertCircle, Send } from "lucide-react";
 
 const ChatView = ({ useChatHook, selectedDoc }) => {
     const { messages, isLoading, error, sendMessage, clearChat } = useChatHook;
@@ -31,21 +32,21 @@ const ChatView = ({ useChatHook, selectedDoc }) => {
         <>
             {selectedDoc ? (
                 <div className="doc-banner">
-                    <span>Chatting about: <strong>{selectedDoc.filename}</strong></span>
+                    <span><FileText size={16} className="lucide-icon" style={{ marginRight: 6 }} /> Chatting about: <strong>{selectedDoc.filename}</strong></span>
                     <button onClick={clearChat} className="btn btn-ghost btn-sm">
                         Clear chat
                     </button>
                 </div>
             ) : (
                 <div className="no-doc-banner">
-                    Alert: No document selected. Upload one or pick from the sidebar.
+                    <AlertCircle className="lucide-icon animate-pulse" size={16} style={{ marginRight: 6 }} /> No document selected. Upload one or pick from the sidebar.
                 </div>
             )}
 
             <div className="messages-area">
                 {messages.length === 0 && (
                     <div className="empty-chat">
-                        <span className="empty-chat-icon">MSG</span>
+                        <span className="empty-chat-icon"><MessageSquare className="lucide-icon animate-float" size={48} strokeWidth={1.5} /></span>
                         <h2 className="empty-chat-title">Ask anything</h2>
                         <p className="empty-chat-sub">Your answers will come straight from the document.</p>
                     </div>
@@ -72,7 +73,7 @@ const ChatView = ({ useChatHook, selectedDoc }) => {
                                             {msg.sources.map((src, i) => (
                                                 <div key={i} className="source-card">
                                                     <div className="source-meta">
-                                                        <span className="source-filename">{src.filename}</span>
+                                                        <span className="source-filename"><FileText size={12} className="lucide-icon" style={{ marginRight: 4, marginTop: -2 }} /> {src.filename}</span>
                                                         <span className="source-score">Score: {src.score}</span>
                                                     </div>
                                                     <p className="source-text">{src.text}</p>
@@ -120,7 +121,7 @@ const ChatView = ({ useChatHook, selectedDoc }) => {
                     onClick={handleSend}
                     disabled={!input.trim() || !selectedDoc || isLoading}
                 >
-                    Send →
+                    Send <Send size={16} className="lucide-icon" style={{ marginLeft: 4 }} />
                 </button>
             </div>
         </>

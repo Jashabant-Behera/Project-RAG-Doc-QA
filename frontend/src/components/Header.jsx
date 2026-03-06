@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { BookOpenText } from "lucide-react";
 
 const Header = () => {
     const location = useLocation();
@@ -12,7 +13,7 @@ const Header = () => {
     return (
         <header className="header">
             <div className="header-brand">
-                <div className="header-logo">DOC</div>
+                <div className="header-logo"><BookOpenText className="lucide-icon animate-pulse" size={20} strokeWidth={2.5} /></div>
                 <span className="header-title">RAG Doc Q&A</span>
             </div>
             <nav className="header-nav">
