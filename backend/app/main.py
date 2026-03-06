@@ -38,10 +38,11 @@ async def health():
 # ✅ FIX: Self-ping every 13 minutes to prevent Render free-tier cold starts.
 # Render spins down services after 15 minutes of inactivity.
 async def _keep_warm():
-    import httpx
     # Only run in production (when RENDER env var is set by Render platform)
     if not os.getenv("RENDER"):
         return
+        
+    import httpx
     service_url = os.getenv("RENDER_EXTERNAL_URL", "")
     if not service_url:
         logger.warning("RENDER_EXTERNAL_URL not set — keep-warm disabled.")
