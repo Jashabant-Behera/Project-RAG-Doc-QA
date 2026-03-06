@@ -133,6 +133,10 @@
   --btn-primary-bg: #FFB703;
   --btn-primary-text: #0B0B0F;
   --tag-bg: #00F5D4;
+  --outline: 2px solid #444;
+  --outline-thick: 3px solid #444;
+  --shadow: 3px 3px 0px #444;
+  --shadow-lg: 5px 5px 0px #444;
 }
 
 * {
