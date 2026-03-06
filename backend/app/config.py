@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
     TOP_K: int = 5
+    
+    FRONTEND_URL: str = ""
 
     class Config:
         env_file = ".env"
