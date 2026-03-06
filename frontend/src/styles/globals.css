@@ -115,24 +115,24 @@
   --tag-bg: #FFB74D;
 }
 
-/* THEME 6: Midnight Dark */
+/* THEME 6: Yellow Retro Dark */
 [data-theme="dark"] {
-  --bg: #1A1A1A;
-  --bg-card: #2A2A2A;
-  --primary: #8AB4F8;
-  --primary-dark: #669df6;
-  --secondary: #FDE293;
-  --accent: #81C995;
-  --accent2: #F28B82;
-  --text: #F8F9FA;
-  --text-muted: #9AA0A6;
-  --sidebar-bg: #202124;
-  --user-bubble: #8AB4F8;
-  --user-bubble-text: #1A1A1A;
-  --assistant-bubble: #35363A;
-  --btn-primary-bg: #8AB4F8;
-  --btn-primary-text: #1A1A1A;
-  --tag-bg: #FDE293;
+  --bg: #0B0B0F;
+  --bg-card: #16161C;
+  --primary: #FFB703;
+  --primary-dark: #FB8500;
+  --secondary: #FF006E;
+  --accent: #00F5D4;
+  --accent2: #7B61FF;
+  --text: #F9FAFB;
+  --text-muted: #9CA3AF;
+  --sidebar-bg: #121217;
+  --user-bubble: #FFB703;
+  --user-bubble-text: #0B0B0F;
+  --assistant-bubble: #1E1E26;
+  --btn-primary-bg: #FFB703;
+  --btn-primary-text: #0B0B0F;
+  --tag-bg: #00F5D4;
 }
 
 * {
@@ -149,6 +149,16 @@ html,
   color: var(--text);
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(#88888820 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ============================================================
@@ -383,8 +393,8 @@ html,
 }
 
 .doc-item:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 #111;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 #111;
 }
 
 .doc-item.selected {
@@ -712,6 +722,11 @@ html,
   border-radius: var(--radius);
   padding: 12px 16px;
   position: relative;
+  transition: transform 0.15s;
+}
+
+.bubble:hover {
+  transform: translate(-2px, -2px);
 }
 
 .bubble.user {
@@ -783,6 +798,11 @@ html,
   border-radius: var(--radius-sm);
   padding: 8px 12px;
   box-shadow: 2px 2px 0 #111;
+  transition: transform 0.15s;
+}
+
+.source-card:hover {
+  transform: translateX(4px);
 }
 
 .source-meta {
@@ -1034,4 +1054,15 @@ html,
 .lucide-icon {
   display: inline-block;
   vertical-align: middle;
+}
+
+.ai-figure {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  opacity: 0.12;
+  width: 140px;
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
 }
