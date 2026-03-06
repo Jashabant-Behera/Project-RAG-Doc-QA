@@ -12,12 +12,13 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Fix 4: CORS — covers Docker frontend (3000) and Vite dev server (5173)
+# Fix 4: CORS — covers Docker frontend (3000), Vite dev server (5173), and Vercel deployed app
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://project-rag-doc-qa.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
