@@ -36,6 +36,7 @@ const Header = () => {
                     <div className={`theme-dot ${theme === "sage" ? "active" : ""}`} data-t="sage" onClick={() => setTheme("sage")} title="Sage Garden"></div>
                     <div className={`theme-dot ${theme === "lavender" ? "active" : ""}`} data-t="lavender" onClick={() => setTheme("lavender")} title="Lavender Dream"></div>
                     <div className={`theme-dot ${theme === "ocean" ? "active" : ""}`} data-t="ocean" onClick={() => setTheme("ocean")} title="Ocean Dusk"></div>
+                    <div className={`theme-dot ${theme === "dark" ? "active" : ""}`} data-t="dark" onClick={() => setTheme("dark")} title="Midnight Dark"></div>
                 </div>
             </nav>
         </header>
