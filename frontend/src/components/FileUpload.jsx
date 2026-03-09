@@ -36,7 +36,7 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
     // Derived loading states for the UI
     const isUploading = status === "uploading";
     const isProcessing = status === "processing";
-    const isBusy = isUploading || isProcessing;
+    const isBusy = isUploading || isProcessing || status === "coldstart";
 
     return (
         <>
@@ -106,6 +106,15 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                     <div className="btn-loading">
                         <div className="spinner"></div>
                         Indexing document — this takes a few seconds…
+                    </div>
+                </div>
+            )}
+
+            {status === "coldstart" && (
+                <div className="upload-actions">
+                    <div className="btn-loading">
+                        <div className="spinner"></div>
+                        Server is warming up — models are loading (~30s on first deploy)…
                     </div>
                 </div>
             )}

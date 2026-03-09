@@ -20,7 +20,7 @@ export const uploadDocument = async (file) => {
  * Polls the upload status endpoint until asynchronous indexing completes.
  * @throws Will reject if polling times out.
  */
-async function pollUntilReady(doc_id, intervalMs = 1500, timeoutMs = 120_000) {
+async function pollUntilReady(doc_id, intervalMs = 1500, timeoutMs = 180_000) {
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {

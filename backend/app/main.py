@@ -72,7 +72,18 @@ async def _keep_warm():
 async def startup_checks():
     logger.info("Backend starting up...")
 
-    logger.info("Embedding model will lazy-load on first request ✓")
+    # Eagerly load both models so the first user request is fast
+    try:
+        from app.core.embedder import encode
+        from app.core.pipeline import _get_reranker
+        logger.info("Pre-loading embedding model...")
+        encode(["warmup"])
+        logger.info("Embedding model ready ✓")
+        logger.info("Pre-loading cross-encoder reranker...")
+        _get_reranker()
+        logger.info("Cross-encoder reranker ready ✓")
+    except Exception as e:
+        logger.warning(f"Model pre-load failed (non-fatal): {e}")
 
     if not settings.GROQ_API_KEY:
         logger.warning(
