@@ -35,6 +35,13 @@ async def health():
     return {"status": "ok", "service": "rag-doc-qa"}
 
 
+@app.get("/warmup", tags=["Health"])
+async def warmup():
+    from app.core.embedder import encode
+    encode(["warmup"])
+    return {"status": "model loaded"}
+
+
 # Background task to poll the service health endpoint.
 # Ensures the ephemeral host (e.g., Render) does not suspend the worker due to inactivity.
 async def _keep_warm():
