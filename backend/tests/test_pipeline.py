@@ -21,14 +21,21 @@ def make_mock_store():
     ]
     return store
 
+import pytest
+
+@pytest.mark.asyncio
 async def test_run_query():
     mock_store = make_mock_store()
 
     with patch("app.core.pipeline.encode") as mock_encode, \
+         patch("app.core.pipeline._get_reranker") as mock_reranker, \
          patch("app.core.pipeline.call_groq", new_callable=AsyncMock) as mock_llm:
 
         mock_encode.return_value = np.array([[0.1] * 384], dtype=np.float32)
         mock_llm.return_value = "Paris is the capital of France."
+
+        # Mock the reranker: predict returns a score per candidate
+        mock_reranker.return_value.predict.return_value = np.array([0.91])
 
         result = await run_query("What is the capital of France?", mock_store)
 
@@ -36,6 +43,7 @@ async def test_run_query():
         assert len(result.sources) == 1
         assert result.sources[0]["doc_id"] == "abc123"
         assert result.sources[0]["score"] == 0.91
+        assert "rerank_score" in result.sources[0]   # new field
         print("\ntest_run_query PASSED")
         print(f"Answer: {result.answer}")
         print(f"Sources: {result.sources}")
