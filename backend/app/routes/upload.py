@@ -17,8 +17,7 @@ from app.logger import logger
 
 router = APIRouter()
 
-# ✅ FIX: In-memory job status store so the frontend can poll progress.
-# In production you'd use Redis, but this works for a single-worker deployment.
+# In-memory persistence for async job statuses.
 _job_status: dict[str, dict] = {}
 
 
@@ -31,27 +30,23 @@ class JobStatusResponse(BaseModel):
 
 
 def _index_document(doc_id: str, save_path: str, filename: str):
-    """Runs in the background — extracts, chunks, embeds, and indexes the doc."""
+    """Asynchronous worker function for extracting, chunking, embedding, and indexing a document."""
     try:
         _job_status[doc_id] = {"status": "processing", "filename": filename}
 
-        # Step 1: Extract text
         text, metadata = extract_text(save_path)
         if not text.strip():
             _job_status[doc_id] = {"status": "error", "message": "Document appears empty or unreadable."}
             return
 
-        # Step 2: Chunk
         chunks = chunk_text(text, doc_id, metadata)
         if not chunks:
             _job_status[doc_id] = {"status": "error", "message": "Document produced no chunks."}
             return
 
-        # Step 3: Embed  (CPU-heavy — now off the request thread)
         texts = [c["text"] for c in chunks]
         vectors = encode(texts)
 
-        # Step 4: Save FAISS index
         index_path = get_doc_index_path(doc_id)
         store = FAISSStore(dim=vectors.shape[1])
         if (index_path / "index.faiss").exists():
@@ -78,14 +73,12 @@ async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
 ):
-    # Step 1: Read and validate
     contents = await file.read()
     try:
         validate_file(file.filename, len(contents))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Step 2: Save file to disk
     doc_id = generate_doc_id()
     ext = Path(file.filename).suffix
     save_path = UPLOAD_DIR / f"{doc_id}{ext}"
@@ -93,10 +86,9 @@ async def upload_document(
         f.write(contents)
     logger.info(f"File saved: {save_path}")
 
-    # ✅ FIX: Kick off heavy work in the background, return immediately.
+    # Offload computation to background thread
     background_tasks.add_task(_index_document, doc_id, str(save_path), file.filename)
 
-    # Return "processing" immediately — frontend polls /upload/status/{doc_id}
     return JobStatusResponse(
         doc_id=doc_id,
         status="processing",
@@ -107,8 +99,7 @@ async def upload_document(
 @router.get("/upload/status/{doc_id}", response_model=JobStatusResponse)
 async def get_upload_status(doc_id: str):
     """
-    ✅ NEW: Frontend polls this endpoint after upload to know when indexing is done.
-    Returns status: 'processing' | 'ready' | 'error'
+    Retrieves the status of an asynchronous document indexing job.
     """
     job = _job_status.get(doc_id)
     if not job:

@@ -7,5 +7,4 @@ export const askQuestion = async (question, docId) => {
     });
 
     return response.data;
-    // Returns: { answer, sources: [{ doc_id, filename, chunk_index, score, text }] }
 };

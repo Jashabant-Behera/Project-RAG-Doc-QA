@@ -27,10 +27,7 @@ Answer:"""
 async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
     logger.info(f"Running query: {question}")
 
-    # Step 1: Embed the question
     query_vector = encode([question])[0]
-
-    # Step 2: Retrieve top-k chunks from FAISS
     results = store.search(query_vector, top_k=settings.TOP_K)
 
     if not results:
@@ -39,7 +36,6 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
             sources=[]
         )
 
-    # Step 3: Build context string from retrieved chunks
     context_parts = []
     for i, result in enumerate(results):
         chunk_text = result.get("text", "")
@@ -48,17 +44,14 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
 
     context = "\n\n".join(context_parts)
 
-    # Fix 3: Truncate context to prevent exceeding LLM token limits
+    # Truncate aggregated context to comply with maximum token limits for the target LLM
     context = context[:4000]
 
-    # Step 4: Fill the prompt template
     prompt = RAG_PROMPT_TEMPLATE.format(context=context, question=question)
     logger.info(f"Prompt built with {len(context_parts)} chunks, {len(context)} chars.")
 
-    # Step 5: Call LLM
     answer = await call_groq(prompt, smart=True)
 
-    # Step 6: Build sources list
     sources = []
     for result in results:
         sources.append({

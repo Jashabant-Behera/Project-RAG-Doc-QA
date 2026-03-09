@@ -42,12 +42,10 @@ def _extract_txt(path: Path, metadata: dict) -> tuple[str, dict]:
     return text, metadata
 
 def _clean_text(text: str) -> str:
-    # Normalize unicode
+    # Sanitization workflow: Unicode normalization, stripping control chars,
+    # and coalescing excessive newlines.
     text = unicodedata.normalize("NFKC", text)
-    # Remove null bytes and control characters (except newlines and tabs)
     text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
-    # Collapse 3+ consecutive newlines into 2
     text = re.sub(r"\n{3,}", "\n\n", text)
-    # Strip leading/trailing whitespace per line
     lines = [line.strip() for line in text.splitlines()]
     return "\n".join(lines).strip()

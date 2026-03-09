@@ -2,7 +2,6 @@ from openai import AsyncOpenAI
 from app.config import settings
 from app.logger import logger
 
-# Groq is OpenAI-compatible — just swap the base_url and API key
 def _get_groq_client() -> AsyncOpenAI:
     return AsyncOpenAI(
         api_key=settings.GROQ_API_KEY,

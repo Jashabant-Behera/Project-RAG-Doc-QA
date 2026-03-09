@@ -35,10 +35,9 @@ async def health():
     return {"status": "ok", "service": "rag-doc-qa"}
 
 
-# ✅ FIX: Self-ping every 13 minutes to prevent Render free-tier cold starts.
-# Render spins down services after 15 minutes of inactivity.
+# Background task to poll the service health endpoint.
+# Ensures the ephemeral host (e.g., Render) does not suspend the worker due to inactivity.
 async def _keep_warm():
-    # Only run in production (when RENDER env var is set by Render platform)
     if not os.getenv("RENDER"):
         return
         
@@ -64,7 +63,6 @@ async def _keep_warm():
 async def startup_checks():
     logger.info("Backend starting up...")
 
-    # Embedding model is already loaded at import time (see embedder.py)
     logger.info("Embedding model pre-loaded ✓")
 
     if not settings.GROQ_API_KEY:
@@ -79,7 +77,6 @@ async def startup_checks():
             f"Smart model: {settings.GROQ_MODEL_SMART}"
         )
 
-    # Start keep-warm background loop
     asyncio.create_task(_keep_warm())
 
 

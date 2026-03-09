@@ -13,7 +13,6 @@ router = APIRouter()
 @router.post("/ask", response_model=AnswerResponse)
 async def ask_question(request: QuestionRequest):
 
-    # Step 1: Validate inputs
     if not request.question.strip():
         raise HTTPException(status_code=422, detail="Question cannot be empty.")
 
@@ -23,7 +22,6 @@ async def ask_question(request: QuestionRequest):
             detail="doc_id is required. Upload a document first and use its doc_id."
         )
 
-    # Step 2: Load FAISS index for this document
     index_path = VECTORDB_DIR / request.doc_id
     if not index_path.exists():
         raise HTTPException(
@@ -42,7 +40,6 @@ async def ask_question(request: QuestionRequest):
             detail="Failed to load document index."
         )
 
-    # Step 3: Run RAG pipeline
     try:
         result = await run_query(question=request.question, store=store)
     except ConnectionError as e:

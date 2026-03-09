@@ -6,7 +6,7 @@ import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import useUpload from "./hooks/useUpload";
-import useChat from "./hooks/useChat";
+import useChat, { expireSessionIfIdle } from "./hooks/useChat";
 
 const App = () => {
     const uploadHook = useUpload();
@@ -14,12 +14,19 @@ const App = () => {
     const [selectedDoc, setSelectedDoc] = useState(null);
 
     const handleUploadSuccess = (doc) => {
+        if (selectedDoc?.doc_id) {
+            expireSessionIfIdle(selectedDoc.doc_id);
+        }
         setSelectedDoc(doc);
+        chatHook.loadDoc(doc.doc_id);
     };
 
     const handleSelectDoc = (doc) => {
+        if (selectedDoc?.doc_id && selectedDoc.doc_id !== doc.doc_id) {
+            expireSessionIfIdle(selectedDoc.doc_id);
+        }
         setSelectedDoc(doc);
-        chatHook.clearChat();
+        chatHook.loadDoc(doc.doc_id);
     };
 
     return (

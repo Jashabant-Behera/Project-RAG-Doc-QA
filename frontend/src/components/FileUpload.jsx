@@ -33,8 +33,7 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
         }
     };
 
-    // ✅ FIX: Differentiate between "uploading" (sending file) and
-    // "processing" (server indexing in background).
+    // Derived loading states for the UI
     const isUploading = status === "uploading";
     const isProcessing = status === "processing";
     const isBusy = isUploading || isProcessing;
@@ -92,7 +91,7 @@ const FileUpload = ({ onUploadSuccess, useUploadHook }) => {
                 </div>
             )}
 
-            {/* ✅ FIX: Two distinct loading states with clear user feedback */}
+            {/* Loading states feedback */}
             {isUploading && (
                 <div className="upload-actions">
                     <div className="btn-loading">

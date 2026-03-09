@@ -6,21 +6,19 @@ export const uploadDocument = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    // ✅ FIX: Upload now returns immediately with status "processing"
     const response = await client.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
     });
 
     const { doc_id, filename } = response.data;
 
-    // ✅ FIX: Poll /upload/status/:doc_id until indexing is complete
     const result = await pollUntilReady(doc_id);
     return { ...result, filename };
 };
 
 /**
- * Polls GET /upload/status/:doc_id every 1.5s until status is "ready" or "error".
- * Rejects after 120s timeout.
+ * Polls the upload status endpoint until asynchronous indexing completes.
+ * @throws Will reject if polling times out.
  */
 async function pollUntilReady(doc_id, intervalMs = 1500, timeoutMs = 120_000) {
     const start = Date.now();
