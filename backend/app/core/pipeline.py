@@ -32,10 +32,7 @@ _reranker = None
 _reranker_lock = threading.Lock()
 RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
-# How many candidates FAISS retrieves before reranking
-RERANK_FETCH_K = 15
-# How many top results survive reranking and go into the prompt
-RERANK_TOP_N = 3
+# Constants are now loaded from settings (RERANK_FETCH_K & RERANK_TOP_N)
 
 
 def _get_reranker():
@@ -54,7 +51,7 @@ def _rerank(question: str, candidates: list[dict]) -> list[dict]:
     """
     Score each (question, chunk_text) pair with the cross-encoder,
     then return candidates sorted by descending relevance score,
-    truncated to RERANK_TOP_N.
+    truncated to settings.RERANK_TOP_N.
     """
     reranker = _get_reranker()
     pairs = [(question, c["text"]) for c in candidates]
@@ -64,7 +61,7 @@ def _rerank(question: str, candidates: list[dict]) -> list[dict]:
         candidate["rerank_score"] = float(score)
 
     ranked = sorted(candidates, key=lambda x: x["rerank_score"], reverse=True)
-    top = ranked[:RERANK_TOP_N]
+    top = ranked[:settings.RERANK_TOP_N]
 
     logger.info(
         f"Reranking: {len(candidates)} candidates → top {len(top)} | "
@@ -79,7 +76,7 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
     query_vector = encode([question])[0]
 
     # Step 1: Retrieve a wider candidate pool from FAISS
-    candidates = store.search(query_vector, top_k=RERANK_FETCH_K)
+    candidates = store.search(query_vector, top_k=settings.RERANK_FETCH_K)
 
     if not candidates:
         return AnswerResponse(

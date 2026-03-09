@@ -11,7 +11,8 @@ class Settings(BaseSettings):
 
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
-    TOP_K: int = 5
+    RERANK_FETCH_K: int = 15
+    RERANK_TOP_N: int = 3
     
     FRONTEND_URL: str = ""
 
