@@ -38,7 +38,9 @@ async def health():
 @app.get("/warmup", tags=["Health"])
 async def warmup():
     from app.core.embedder import encode
+    from app.core.pipeline import _get_reranker
     encode(["warmup"])
+    _get_reranker()
     return {"status": "model loaded"}
 
 

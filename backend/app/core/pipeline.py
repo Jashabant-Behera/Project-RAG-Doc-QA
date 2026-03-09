@@ -1,3 +1,4 @@
+import threading
 from app.core.embedder import encode
 from app.core.llm import call_groq
 from app.models.response import AnswerResponse
@@ -24,18 +25,72 @@ Question:
 
 Answer:"""
 
+# ---------------------------------------------------------------------------
+# Cross-encoder — lazy-loaded with thread safety (same pattern as embedder.py)
+# ---------------------------------------------------------------------------
+_reranker = None
+_reranker_lock = threading.Lock()
+RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+# How many candidates FAISS retrieves before reranking
+RERANK_FETCH_K = 15
+# How many top results survive reranking and go into the prompt
+RERANK_TOP_N = 3
+
+
+def _get_reranker():
+    global _reranker
+    if _reranker is None:
+        with _reranker_lock:
+            if _reranker is None:
+                logger.info(f"Loading cross-encoder reranker: {RERANKER_MODEL}")
+                from sentence_transformers.cross_encoder import CrossEncoder
+                _reranker = CrossEncoder(RERANKER_MODEL)
+                logger.info("Cross-encoder reranker loaded and ready.")
+    return _reranker
+
+
+def _rerank(question: str, candidates: list[dict]) -> list[dict]:
+    """
+    Score each (question, chunk_text) pair with the cross-encoder,
+    then return candidates sorted by descending relevance score,
+    truncated to RERANK_TOP_N.
+    """
+    reranker = _get_reranker()
+    pairs = [(question, c["text"]) for c in candidates]
+    scores = reranker.predict(pairs)  # returns a numpy array of floats
+
+    for candidate, score in zip(candidates, scores):
+        candidate["rerank_score"] = float(score)
+
+    ranked = sorted(candidates, key=lambda x: x["rerank_score"], reverse=True)
+    top = ranked[:RERANK_TOP_N]
+
+    logger.info(
+        f"Reranking: {len(candidates)} candidates → top {len(top)} | "
+        f"best score: {top[0]['rerank_score']:.4f}"
+    )
+    return top
+
+
 async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
     logger.info(f"Running query: {question}")
 
     query_vector = encode([question])[0]
-    results = store.search(query_vector, top_k=settings.TOP_K)
 
-    if not results:
+    # Step 1: Retrieve a wider candidate pool from FAISS
+    candidates = store.search(query_vector, top_k=RERANK_FETCH_K)
+
+    if not candidates:
         return AnswerResponse(
             answer="No relevant content found. Please upload a document first.",
             sources=[]
         )
 
+    # Step 2: Rerank candidates with the cross-encoder, keep top N
+    results = _rerank(question, candidates)
+
+    # Step 3: Build context from reranked top results
     context_parts = []
     for i, result in enumerate(results):
         chunk_text = result.get("text", "")
@@ -59,6 +114,7 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
             "filename": result.get("filename", ""),
             "chunk_index": result.get("chunk_index", -1),
             "score": round(result.get("score", 0.0), 4),
+            "rerank_score": round(result.get("rerank_score", 0.0), 4),
             "text": result.get("text", "")[:300]
         })
 
