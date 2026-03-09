@@ -34,8 +34,8 @@ const useUpload = () => {
 
             // After 800ms → show "processing"
             const processingTimer = setTimeout(() => setStatus("processing"), 800);
-            // After 8s → show cold start warning
-            const coldStartTimer = setTimeout(() => setStatus("coldstart"), 8000);
+            // After 3s → show cold start warning
+            const coldStartTimer = setTimeout(() => setStatus("coldstart"), 3000);
 
             const result = await resultPromise;
             clearTimeout(processingTimer);

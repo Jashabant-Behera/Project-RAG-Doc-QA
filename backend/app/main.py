@@ -29,19 +29,25 @@ app.add_middleware(
 app.include_router(upload.router, tags=["Upload"])
 app.include_router(qa.router, tags=["Q&A"])
 
+# Flipped to True only after both models are fully loaded in memory.
+_models_ready = False
+
 
 @app.get("/health", tags=["Health"])
 async def health():
-    return {"status": "ok", "service": "rag-doc-qa"}
+    return {
+        "status": "ok" if _models_ready else "warming_up",
+        "models_ready": _models_ready,
+        "service": "rag-doc-qa"
+    }
 
 
 @app.get("/warmup", tags=["Health"])
 async def warmup():
-    from app.core.embedder import encode
-    from app.core.pipeline import _get_reranker
-    encode(["warmup"])
-    _get_reranker()
-    return {"status": "model loaded"}
+    return {
+        "status": "ready" if _models_ready else "still_loading",
+        "models_ready": _models_ready
+    }
 
 
 # Background task to poll the service health endpoint.
@@ -49,7 +55,7 @@ async def warmup():
 async def _keep_warm():
     if not os.getenv("RENDER"):
         return
-        
+
     import httpx
     service_url = os.getenv("RENDER_EXTERNAL_URL", "")
     if not service_url:
@@ -60,7 +66,7 @@ async def _keep_warm():
     logger.info(f"Keep-warm task started. Pinging {ping_url} every 13 minutes.")
     async with httpx.AsyncClient() as client:
         while True:
-            await asyncio.sleep(13 * 60)  # 13 minutes
+            await asyncio.sleep(13 * 60)
             try:
                 r = await client.get(ping_url, timeout=10)
                 logger.info(f"Keep-warm ping: {r.status_code}")
@@ -70,20 +76,30 @@ async def _keep_warm():
 
 @app.on_event("startup")
 async def startup_checks():
+    global _models_ready
     logger.info("Backend starting up...")
 
-    # Eagerly load both models so the first user request is fast
     try:
-        from app.core.embedder import encode
-        from app.core.pipeline import _get_reranker
         logger.info("Pre-loading embedding model...")
-        encode(["warmup"])
+        from app.core.embedder import encode
+        await asyncio.get_event_loop().run_in_executor(
+            None, lambda: encode(["warmup"])
+        )
         logger.info("Embedding model ready ✓")
+
         logger.info("Pre-loading cross-encoder reranker...")
-        _get_reranker()
+        from app.core.pipeline import _get_reranker
+        await asyncio.get_event_loop().run_in_executor(
+            None, _get_reranker
+        )
         logger.info("Cross-encoder reranker ready ✓")
+
+        _models_ready = True
+        logger.info("All models loaded. Service is ready ✓")
+
     except Exception as e:
         logger.warning(f"Model pre-load failed (non-fatal): {e}")
+        _models_ready = True  # allow requests anyway
 
     if not settings.GROQ_API_KEY:
         logger.warning(

@@ -3,6 +3,9 @@ import client from "./client";
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 export const uploadDocument = async (file) => {
+    // Block until both backend models are fully loaded before sending the file.
+    await waitUntilReady();
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -11,10 +14,33 @@ export const uploadDocument = async (file) => {
     });
 
     const { doc_id, filename } = response.data;
-
     const result = await pollUntilReady(doc_id);
     return { ...result, filename };
 };
+
+/**
+ * Polls /health until models_ready is true.
+ * Handles cold start + model loading delay before the upload is sent.
+ */
+async function waitUntilReady(intervalMs = 2000, timeoutMs = 300_000) {
+    const start = Date.now();
+
+    while (Date.now() - start < timeoutMs) {
+        try {
+            const res = await fetch(`${baseURL}/health`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.models_ready) return;
+            }
+        } catch {
+            // Server not up yet — keep polling
+        }
+        await sleep(intervalMs);
+    }
+
+    // eslint-disable-next-line no-throw-literal
+    throw { response: { data: { detail: "Server took too long to start. Please try again." } } };
+}
 
 /**
  * Polls the upload status endpoint until asynchronous indexing completes.
