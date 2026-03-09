@@ -70,7 +70,7 @@ async def _keep_warm():
 async def startup_checks():
     logger.info("Backend starting up...")
 
-    logger.info("Embedding model pre-loaded ✓")
+    logger.info("Embedding model will lazy-load on first request ✓")
 
     if not settings.GROQ_API_KEY:
         logger.warning(
