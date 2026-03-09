@@ -6,7 +6,7 @@ A full-stack, production-ready Retrieval-Augmented Generation (RAG) system. This
 
 * **Retrieval-Augmented Generation (RAG):** Eliminates LLM hallucinations by restricting answers strictly to the provided document context.
 * **Intelligent Document Processing:** Asynchronous extraction, chunking, and dense vector embedding using `sentence-transformers` (`all-MiniLM-L6-v2`).
-* **High-Speed Vector Search:** Utilizes Facebook AI Similarity Search (FAISS) for lightning-fast, local semantic retrieval.
+* **High-Speed Vector Search & Reranking:** Utilizes Facebook AI Similarity Search (FAISS) for fast initial retrieval, followed by a powerful Cross-Encoder (`ms-marco-MiniLM-L-6-v2`) to rerank the top 15 candidates down to the 3 most highly relevant chunks.
 * **Ultra-Fast LLM Inference:** Powered by **Groq**'s API (using Llama 3 70B & 8B models) for near-instant responses.
 * **Persistent Local Sessions:** Uses browser `sessionStorage` to automatically preserve chat histories for up to 1-hour of inactivity per document—no database required.
 * **Production-Ready Backend:** Built with FastAPI, featuring async background indexing, clean code architecture, and keep-warm mechanisms for ephemeral deployments (e.g., Render).
