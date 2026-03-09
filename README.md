@@ -94,6 +94,45 @@ npm run dev
 
 ---
 
+## 📁 Project Structure
+
+```text
+Project-RAG-Doc-QA/
+│
+├── backend/
+│   ├── app/
+│   │   ├── core/         # AI models, embeddings, RAG pipeline
+│   │   ├── ingestion/    # Text extraction for PDF, DOCX, TXT
+│   │   ├── models/       # Pydantic request/response schemas
+│   │   ├── routes/       # FastAPI endpoints (/upload, /ask)
+│   │   ├── vectorstore/  # FAISS index management
+│   │   ├── utils/        # Validators and helpers
+│   │   ├── config.py     # Environment configurations
+│   │   ├── logger.py     # Structured application logging
+│   │   └── main.py       # FastAPI application entrypoint
+│   │
+│   ├── storage/          # Local Document & FAISS index storage
+│   └── requirements.txt  # Python dependencies
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/          # Axios API wrappers
+│   │   ├── components/   # Chat bubbles, upload dropzone, sidebar
+│   │   ├── hooks/        # UI logic (useChat, useUpload)
+│   │   ├── pages/        # Home (Upload View) and Chat View
+│   │   ├── styles/       # Modern Vanilla CSS with theming
+│   │   ├── utils/        # Date formatters & input validators
+│   │   └── App.jsx       # Main application router
+│   │
+│   └── package.json      # Frontend NPM dependencies
+│
+├── docker-compose.yml    # Full stack Docker configuration
+├── .env.example          # Sample environment variables
+└── README.md             # Project documentation
+```
+
+---
+
 ## 💡 How It Works Under the Hood
 
 1. **Ingestion & Processing:** 
