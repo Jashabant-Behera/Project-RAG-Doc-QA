@@ -55,7 +55,8 @@ GROQ_MODEL_SMART=llama-3.3-70b-versatile
 
 CHUNK_SIZE=500
 CHUNK_OVERLAP=50
-TOP_K=5
+RERANK_FETCH_K=15
+RERANK_TOP_N=3
 
 FRONTEND_URL=http://localhost:5173
 ```
@@ -142,7 +143,7 @@ Project-RAG-Doc-QA/
 3. **Indexing:** 
    These vectors are stored locally in a FAISS index alongside a pickle file for metadata tracking.
 4. **Retrieval (RAG):**
-   When a question is asked, it is embedded into the same 384D space. The FAISS index is queried for the Top-K (default 5) closest contextual chunks mathematically.
+   When a question is asked, it is embedded into the same 384D space. The FAISS index is queried for the top 15 closest contextual chunks mathematically. These 15 candidates are then scored by a Cross-Encoder (`ms-marco-MiniLM-L-6-v2`) to find the absolute best 3 chunks.
 5. **Generation:**
    The retrieved chunks and user question are injected into an optimized System Prompt and sent to the Groq API (Llama 3 70B). Groq responds with an accurate, context-grounded answer.
 6. **State Management:**
