@@ -1,3 +1,4 @@
+import re
 from typing import List
 from app.config import settings
 from app.logger import logger
@@ -11,6 +12,14 @@ def chunk_text(text: str, doc_id: str, metadata: dict) -> List[dict]:
 
     while start < len(text):
         end = start + chunk_size
+        
+        if end < len(text):
+            match = re.search(r'\s[.!?]', text[start:end][::-1])
+            if match:
+                adjusted_end = end - match.start()
+                if adjusted_end - start > overlap:
+                    end = adjusted_end
+
         chunk_text_slice = text[start:end].strip()
 
         if chunk_text_slice:
@@ -31,7 +40,7 @@ def chunk_text(text: str, doc_id: str, metadata: dict) -> List[dict]:
             })
             index += 1
 
-        start += chunk_size - overlap
+        start = end - overlap
 
     logger.info(f"Chunked doc {doc_id} into {len(chunks)} chunks.")
     return chunks

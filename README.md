@@ -23,6 +23,7 @@ A full-stack, production-ready Retrieval-Augmented Generation (RAG) system. This
 * SentenceTransformers (Local embeddings running on CPU)
 * PyMuPDF & python-docx (Document parsing)
 * Groq API (Llama 3)
+* tiktoken (Context window management)
 * Pydantic (Data validation)
 
 **Frontend:**
@@ -145,7 +146,7 @@ Project-RAG-Doc-QA/
 4. **Retrieval (RAG):**
    When a question is asked, it is embedded into the same 384D space. The FAISS index is queried for the top 15 closest contextual chunks mathematically. These 15 candidates are then scored by a Cross-Encoder (`ms-marco-MiniLM-L-6-v2`) to find the absolute best 3 chunks.
 5. **Generation:**
-   The retrieved chunks and user question are injected into an optimized System Prompt and sent to the Groq API (Llama 3 70B). Groq responds with an accurate, context-grounded answer.
+   The retrieved chunks and user question are precisely token-counted using `tiktoken` to maximize the context window without overflowing it. They are then injected into an optimized System Prompt and sent to the Groq API (Llama 3 70B). Groq responds with an accurate, context-grounded answer.
 6. **State Management:**
    The React frontend manages ongoing conversations dynamically. Document swapping allows users to view chat history tied seamlessly to the active document ID via local `sessionStorage`.
 

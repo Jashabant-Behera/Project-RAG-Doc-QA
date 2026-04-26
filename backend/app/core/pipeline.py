@@ -1,4 +1,5 @@
 import threading
+import asyncio
 from app.core.embedder import encode
 from app.core.llm import call_groq
 from app.models.response import AnswerResponse
@@ -64,7 +65,7 @@ def _rerank(question: str, candidates: list[dict]) -> list[dict]:
     top = ranked[:settings.RERANK_TOP_N]
 
     logger.info(
-        f"Reranking: {len(candidates)} candidates → top {len(top)} | "
+        f"Reranking: {len(candidates)} candidates -> top {len(top)} | "
         f"best score: {top[0]['rerank_score']:.4f}"
     )
     return top
@@ -73,7 +74,8 @@ def _rerank(question: str, candidates: list[dict]) -> list[dict]:
 async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
     logger.info(f"Running query: {question}")
 
-    query_vector = encode([question])[0]
+    loop = asyncio.get_event_loop()
+    query_vector = await loop.run_in_executor(None, lambda: encode([question])[0])
 
     # Step 1: Retrieve a wider candidate pool from FAISS
     candidates = store.search(query_vector, top_k=settings.RERANK_FETCH_K)
@@ -85,19 +87,25 @@ async def run_query(question: str, store: FAISSStore) -> AnswerResponse:
         )
 
     # Step 2: Rerank candidates with the cross-encoder, keep top N
-    results = _rerank(question, candidates)
+    results = await loop.run_in_executor(None, _rerank, question, candidates)
 
     # Step 3: Build context from reranked top results
+    import tiktoken
+    encoding = tiktoken.get_encoding("cl100k_base")
     context_parts = []
+    current_tokens = 0
+    MAX_TOKENS = 4000
     for i, result in enumerate(results):
         chunk_text = result.get("text", "")
         if chunk_text:
-            context_parts.append(f"Document Chunk {i+1}:\n{chunk_text}")
+            part = f"Document Chunk {i+1}:\n{chunk_text}\n\n"
+            tokens = len(encoding.encode(part))
+            if current_tokens + tokens > MAX_TOKENS:
+                break
+            context_parts.append(part.strip())
+            current_tokens += tokens
 
     context = "\n\n".join(context_parts)
-
-    # Truncate aggregated context to comply with maximum token limits for the target LLM
-    context = context[:4000]
 
     prompt = RAG_PROMPT_TEMPLATE.format(context=context, question=question)
     logger.info(f"Prompt built with {len(context_parts)} chunks, {len(context)} chars.")

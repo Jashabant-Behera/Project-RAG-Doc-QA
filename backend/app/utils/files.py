@@ -1,5 +1,6 @@
 import uuid
 import os
+import re
 from pathlib import Path
 from app.logger import logger
 
@@ -10,9 +11,16 @@ UPLOAD_DIR = Path("storage/uploads")
 VECTORDB_DIR = Path("storage/vectordb")
 
 def ensure_storage_dirs():
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    VECTORDB_DIR.mkdir(parents=True, exist_ok=True)
-    logger.info("Storage directories verified.")
+    try:
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        VECTORDB_DIR.mkdir(parents=True, exist_ok=True)
+        logger.info("Storage directories verified.")
+    except PermissionError as e:
+        logger.error(f"Permission denied creating storage directories: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error creating storage directories: {e}")
+        raise
 
 def validate_file(filename: str, size_bytes: int) -> bool:
     ext = filename.rsplit(".", 1)[-1].lower()
@@ -30,6 +38,8 @@ def generate_doc_id() -> str:
     return uuid.uuid4().hex
 
 def get_doc_index_path(doc_id: str) -> Path:
+    if not re.match(r'^[a-fA-F0-9]{32}$', doc_id):
+        raise ValueError("Invalid doc_id format.")
     path = VECTORDB_DIR / doc_id
     path.mkdir(parents=True, exist_ok=True)
     return path

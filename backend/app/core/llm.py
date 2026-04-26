@@ -1,4 +1,5 @@
 from openai import AsyncOpenAI
+from tenacity import retry, wait_exponential, stop_after_attempt
 from app.config import settings
 from app.logger import logger
 
@@ -9,6 +10,7 @@ def _get_groq_client() -> AsyncOpenAI:
     )
 
 
+@retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
 async def call_groq(prompt: str, smart: bool = True) -> str:
     """
     Call Groq's LLM via the OpenAI-compatible API.
@@ -42,6 +44,7 @@ async def call_groq(prompt: str, smart: bool = True) -> str:
             ],
             temperature=0.2,
             max_tokens=1024,
+            timeout=30.0,
         )
 
         answer = response.choices[0].message.content.strip()

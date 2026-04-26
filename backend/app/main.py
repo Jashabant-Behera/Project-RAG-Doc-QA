@@ -14,13 +14,16 @@ app = FastAPI(
     version="0.1.0"
 )
 
+# Parse FRONTEND_URL from settings; fallback to defaults if empty
+origins = [origin.strip() for origin in settings.FRONTEND_URL.split(",")] if settings.FRONTEND_URL else [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://project-rag-doc-qa.vercel.app"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://project-rag-doc-qa.vercel.app"
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,27 +88,24 @@ async def startup_checks():
         await asyncio.get_event_loop().run_in_executor(
             None, lambda: encode(["warmup"])
         )
-        logger.info("Embedding model ready ✓")
+        logger.info("Embedding model ready")
 
         logger.info("Pre-loading cross-encoder reranker...")
         from app.core.pipeline import _get_reranker
         await asyncio.get_event_loop().run_in_executor(
             None, _get_reranker
         )
-        logger.info("Cross-encoder reranker ready ✓")
+        logger.info("Cross-encoder reranker ready")
 
         _models_ready = True
-        logger.info("All models loaded. Service is ready ✓")
+        logger.info("All models loaded. Service is ready")
 
     except Exception as e:
         logger.warning(f"Model pre-load failed (non-fatal): {e}")
         _models_ready = True  # allow requests anyway
 
     if not settings.GROQ_API_KEY:
-        logger.warning(
-            "GROQ_API_KEY is not set. "
-            "Upload will work but /ask will fail until the key is configured."
-        )
+        raise RuntimeError("GROQ_API_KEY is not set. Cannot start the application.")
     else:
         logger.info(
             f"Groq API key loaded. "

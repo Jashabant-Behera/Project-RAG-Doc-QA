@@ -102,6 +102,12 @@ const useChat = () => {
             };
             setMessages((prev) => [...prev, assistantMessage]);
         } catch (err) {
+            if (err.response?.status === 404) {
+                clearSession(activeDocId || docId);
+                setError("Document not found on the server. Please upload it again.");
+                return;
+            }
+
             const message =
                 err.response?.data?.detail || "Something went wrong. Please try again.";
             setError(message);
